@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bootstrap JIRA-like Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">My Kanban Project</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="/home">Projects</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Filters</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Dashboards</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Teams</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Apps</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Header -->
+<header class="bg-light py-3 mb-4">
+    <div class="container">
+        <h2 class="display-6" th:text="${project.name}">Project Name</h2>
+    </div>
+</header>
+
+<!-- Main Form -->
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <h5 th:text="'Project: ' + ${project.name}">Project Name</h5>
+        </div>
+        <div class="card-body" >
+            <form  th:action="@{/bugs/saveBugPro}" method="post">
+                <input type="hidden" name="projectId" th:value="${project.id}" />
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="3" placeholder="Add a description..." th:text="${Bug.description}">Description</textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="assignee" class="form-label">Assignee</label>
+                    <select class="form-select" id="assignee" name="assignee">
+                        <option th:each="user : ${users}" th:value="${user.id}" th:text="${user.getUsername()}" th:selected="${Bug.assignedTo.getId() == user.id ? 'selected' : ''}"></option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="priority" class="form-label">Priority</label>
+                    <select class="form-select" id="priority" name="priority">
+                        <option value="High" th:selected="${Bug.priority == 'High' ? 'selected' : ''}">High</option>
+                        <option value="Normal" th:selected="${Bug.priority == 'Normal' ? 'selected' : ''}">Normal</option>
+                        <option value="Low" th:selected="${Bug.priority == 'Low' ? 'selected' : ''}">Low</option>
+                    </select>
+                </div>
+
+                <div class="mb-5">
+                    <label for="comments" class="form-label">Comments</label>
+                    <textarea class="form-control" id="comments" name="comments" rows="5" placeholder="Add a comment..."
+                              th:text="${allComments}">
+                    </textarea>
+
+                </div>
+
+
+                <button type="submit" class="btn btn-primary">Save</button>
+
+                <button type="button" class="btn btn-secondary" onclick="resetForm()" id="resetButton"> Cancel</button>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="container mt-4">
+
+    <div class="card">
+        <div class="card-header">
+            <h5>Comments</h5>
+        </div>
+        <div class="card-body">
+            <!-- Comment Form -->
+            <form id="commentForm" th:action="@{/addComment}" method="post">
+                <input type="hidden" name="projectId" th:value="${project.id}"/>
+                <input type="hidden" name="bugId" th:value="${Bug.id}"/>
+                <input type="hidden" name="redirectUrl" th:value="'/project/id=' + ${project.id}"/>
+                <div class="mb-3">
+                    <textarea class="form-control" id="commentInput" name="commentInput" rows="2" placeholder="Add a comment..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+
+            <!-- Comments List -->
+            <ul class="list-group mt-3">
+                <li class="list-group-item" th:each="comment : ${comments}" th:data-id="${comment.id}">
+                    <strong th:text="${comment.user.getUsername()}">You</strong>
+                    <small class="text-muted" th:text="${comment.timeElapsed}">Just now</small>
+
+                    <p th:text="${comment.text}" class="comment-text">Comment text</p>
+
+                    <a href="#" class="link-primary edit-comment">Edit</a> ·
+
+                    <form th:action="@{/comments/delete/{id}(id=${comment.id})}" method="post" style="display:inline;">
+                        <input type="hidden" name="_method" value="delete"/>
+                        <input type="hidden" name="redirectUrl" th:value="'/project/id=' + ${project.id}"/>
+                        <button type="submit" class="link-danger btn btn-link">Delete</button>
+                    </form> ·
+
+                    <a href="#" class="link-secondary">😊</a>
+
+                    <a href="#" class="link-success save-comment" style="display:none;">Save</a>
+                </li>
+            </ul>
+
+        </div>
+    </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
+<script>
+    function resetForm() {
+        document.getElementById('resetButton').addEventListener('click', function() {
+            document.getElementById('bugForm').reset();
+        })
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Xử lý nút "Edit" để thay thế đoạn văn bản bằng textarea
+        document.querySelectorAll('.edit-comment').forEach(function (editLink) {
+            editLink.addEventListener('click', function (event) {
+                event.preventDefault();
+                var li = this.closest('li');
+                var commentText = li.querySelector('.comment-text');
+                var saveLink = li.querySelector('.save-comment');
+
+                // Tạo và thay thế textarea
+                var textarea = document.createElement('textarea');
+                textarea.classList.add('form-control');
+                textarea.value = commentText.textContent;
+                commentText.replaceWith(textarea);
+
+                this.style.display = 'none';
+                saveLink.style.display = 'inline';
+            });
+        });
+
+
+        document.querySelectorAll('.save-comment').forEach(function (saveLink) {
+            saveLink.addEventListener('click', function (event) {
+                event.preventDefault();
+                var li = this.closest('li');
+                var textarea = li.querySelector('textarea');
+                var commentId = li.getAttribute('data-id');
+                var editLink = li.querySelector('.edit-comment');
+
+                var updatedText = textarea.value;
+
+                var p = document.createElement('p');
+                p.classList.add('comment-text');
+                p.textContent = updatedText;
+                textarea.replaceWith(p);
+
+                this.style.display = 'none';
+                editLink.style.display = 'inline';
+
+
+                fetch(`/comments/update/${commentId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ text: updatedText })
+                }).then(response => {
+                    if (!response.ok) {
+                        alert('Failed to update comment.');
+                    }
+                }).catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to update comment.');
+                });
+            });
+        });
+
+
+
+
+</script>

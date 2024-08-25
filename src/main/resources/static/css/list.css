@@ -1,0 +1,21 @@
+#actionToolbar {
+    display: none;
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    z-index: 1000;
+    transform: translateX(-220%);
+}
+
+ .project-link {
+     color: blue;
+     text-decoration: underline;
+     font-size: 18px;
+     text-decoration-color: blue;
+ }
+
+.project-link:hover {
+    cursor: pointer;
+    color: red;
+}
+

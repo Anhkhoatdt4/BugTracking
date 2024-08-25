@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/create.css">
+    <title>Create Issue</title>
+</head>
+<body>
+<div class="container">
+    <div class="create-issue-form">
+        <h1>Create New Issue</h1>
+        <form id="issue-form" action="/home/create-issue" method="post">
+
+            <label for="Project">Project:</label>
+            <select id="Project" name="project">
+                <option value="">Select Project</option>
+                <th:block th:each="project : ${projects}">
+                    <option th:value="${project.name}" th:text="${project.name}"></option>
+                </th:block>
+            </select>
+
+
+            <label for="summary">Summary:</label>
+            <input type="text" id="summary" name="summary">
+
+
+            <label for="status">Status:</label>
+            <select id="status" name="status">
+                <option value="To do">To do</option>
+                <option value="In progress">In progress</option>
+            </select>
+
+            <label for="description">Description:</label>
+            <textarea id="description" name="description" rows="4" placeholder="Words not enough? Type : to add emoji."></textarea>
+
+            <label for="labels">Labels:</label>
+            <input type="text" id="labels" name="labels">
+
+
+            <label for="priority">Priority:</label>
+            <select id="priority" name="priority">
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+            </select>
+
+            <label for="assignee">Assignee:</label>
+            <select id="assignee" name="assignee">
+                <option value="">Select Assignee</option>
+                <th:block th:each="user : ${users}">
+                    <option th:value="${user.username}" th:text="${user.username}"></option>
+                </th:block>
+            </select>
+
+            <label for="reporter">Reporter:</label>
+            <select id="reporter" name="reporter">
+                <option value="Anh Khoa">Anh Khoa</option>
+            </select>
+
+            <div class="btn-container">
+                <button class="btn cancel" type="button">Cancel</button>
+                <button class="btn create" type="submit">Create Issue</button>
+            </div>
+
+        </form>
+    </div>
+</div>
+</body>
+</html>
+<!-- <script>
+function insertText(text) {
+    const textarea = document.getElementById("description");
+    const startPos = textarea.selectionStart;
+    const endPos = textarea.selectionEnd;
+
+    textarea.value = textarea.value.substring(0, startPos) + text + textarea.value.substring(endPos, textarea.value.length);
+
+    // Di chuyển con trỏ tới sau phần text mới được chèn vào
+    textarea.selectionStart = textarea.selectionEnd = startPos + text.length;
+
+    // Đặt tiêu điểm trở lại vào textarea
+    textarea.focus();
+}
+
+</script> -->

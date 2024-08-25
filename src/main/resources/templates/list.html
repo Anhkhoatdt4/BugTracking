@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Jira-like Layout</title>
+    <link rel="stylesheet" href="/css/list.css">
+
+</head>
+<body>
+<!-- Header -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">My Kanban Project</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="#">Projects</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Filters</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Dashboards</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Teams</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Apps</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav id="sidebar" class="col-md-2 d-md-block bg-light sidebar collapse">
+            <div class="position-sticky">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="#">
+                            <span data-feather="home"></span>
+                            Timeline
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <span data-feather="file"></span>
+                            Board
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <span data-feather="shopping-cart"></span>
+                            List
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <span data-feather="users"></span>
+                            Goals
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <span data-feather="bar-chart-2"></span>
+                            Add view
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <span data-feather="layers"></span>
+                            Code
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <span data-feather="layers"></span>
+                            Project pages
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <span data-feather="layers"></span>
+                            Project settings
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">List</h1>
+                <div class="input-group mb-3">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search by project or title">
+                    <button class="btn btn-outline-secondary" id="searchButton" type="button">Search</button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <div class="mb-3">
+                    <input type="checkbox" id="selectAll"> Select All
+                </div>
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                    <tr>
+                        <th scope="col"><input type="checkbox" class="itemCheckbox"></th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Key</th>
+                        <th scope="col">Summary</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Assignee</th>
+                        <th scope="col">Labels</th>
+                        <th scope="col">Created</th>
+                        <th scope="col">Updated</th>
+                        <th scope="col">Reporter</th>
+                    </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                    <tr th:each="bug : ${bugs}">
+                        <td><input type="checkbox" class="itemCheckbox" data-bug-id="${bug.id}">
+                        </td>
+                        <td>Bug</td>
+                        <td>
+                            <a class="project-link" th:href="@{/project/id={id}(id=${bug.project.id})}" th:text="${bug.project.name} + ' ' + ${bug.project.id}">
+                            </a>
+                        </td>
+
+                        <td  th:text="${bug.title}" class="title" >loginbug</td>
+                        <td>
+                            <span th:class="'badge ' +
+                                (${bug.status == 'Done' ? 'bg-success' :
+                                (bug.status == 'To do' ? 'bg-secondary' :
+                                (bug.status == 'In Progress' ? 'bg-primary' : ''))})"
+                                  th:text="${bug.status}"
+                                  onclick="showDropdown(this)">
+                            </span>
+
+                            <select style="display: none;" onchange="updateStatus(this, [[${bug.id}]])">
+                                <option value="Done" th:selected="${bug.status == 'Done'}">Done</option>
+                                <option value="To do" th:selected="${bug.status == 'To do'}">To do</option>
+                                <option value="In Progress" th:selected="${bug.status == 'In Progress'}">In Progress</option>
+                            </select>
+                        </td>
+
+                        <td>
+                            <span th:class="'badge bg-success'" th:text="${bug.assignedTo.getUsername()}" onclick="editField(this, 'assignee')"></span>
+                        </td>
+                        <td th:text="${bug.labels}"></td>
+
+                        <td th:text="${#temporals.format(bug.createdDate, 'dd MM , yyyy')}"></td>
+                        <td th:text="${#temporals.format(bug.lastUpdatedDate, 'dd MM, yyyy')}"></td>
+
+                        <td th:text="${bug.reporter}">Reporter Name</td> <!-- Show reporter name -->
+
+                    </tr>
+                    <!-- Add more rows as needed -->
+                    </tbody>
+
+                </table>
+                <button class="btn btn-primary" id="createButton">+ Create</button>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div id="actionToolbar" class="alert alert-info" style="display: none;">
+    <strong>Selected issues:</strong>
+    <button class="btn btn-primary" id="editButton">Edit</button>
+    <button class="btn btn-danger" id="deleteButton">Delete</button>
+</div>
+<script src="/js/list.js"></script>
+
+<script>
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
+        const tableBody = document.getElementById('tableBody');
+
+        searchInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                const query = searchInput.value.toLowerCase();
+                filterTable(query);
+            }
+        });
+
+        function filterTable(query) {
+            Array.from(tableBody.getElementsByTagName('tr')).forEach(row => {
+                // Lấy các cột dựa trên chỉ số
+                const projectCell = row.querySelector('td:nth-child(3)');
+                const titleCell = row.querySelector('td:nth-child(4)');
+
+                // Lấy văn bản từ các ô
+                const projectText = projectCell ? projectCell.textContent.toLowerCase() : '';
+                const titleText = titleCell ? titleCell.textContent.toLowerCase() : '';
+
+                // Kiểm tra sự khớp của truy vấn tìm kiếm với các cột
+                const shouldShow = projectText.includes(query) || titleText.includes(query);
+
+                // Hiển thị hoặc ẩn hàng dựa trên điều kiện
+                row.style.display = shouldShow ? '' : 'none';
+            });
+        }
+    });
+
+</script>
+
+</body>
+</html>
